@@ -1,465 +1,921 @@
-// Reemplaza href="#" en los botones CTA con tu URL de Calendly o agenda
+'use client'
+import { useEffect, useRef, useState } from 'react'
+
+// ─── hooks ──────────────────────────────────────────────────────────────────
+
+function useInView(threshold = 0.12) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [vis, setVis] = useState(false)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVis(true); obs.disconnect() } },
+      { threshold }
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [threshold])
+  return { ref, vis }
+}
+
+function useCountUp(to: number, decimals = 0, duration = 1800, run = false) {
+  const [val, setVal] = useState(0)
+  useEffect(() => {
+    if (!run) return
+    let start: number | null = null
+    const step = (ts: number) => {
+      if (!start) start = ts
+      const p = Math.min((ts - start) / duration, 1)
+      const ease = 1 - Math.pow(1 - p, 3)
+      setVal(parseFloat((ease * to).toFixed(decimals)))
+      if (p < 1) requestAnimationFrame(step)
+    }
+    requestAnimationFrame(step)
+  }, [run, to, decimals, duration])
+  return val
+}
+
+// ─── components ─────────────────────────────────────────────────────────────
+
+function Fade({
+  children,
+  delay = 0,
+  className = '',
+}: {
+  children: React.ReactNode
+  delay?: number
+  className?: string
+}) {
+  const { ref, vis } = useInView()
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: vis ? 1 : 0,
+        transform: vis ? 'translateY(0)' : 'translateY(28px)',
+        transition: `opacity 0.75s ease ${delay}ms, transform 0.75s ease ${delay}ms`,
+      }}
+    >
+      {children}
+    </div>
+  )
+}
+
+function Counter({
+  to,
+  prefix = '',
+  suffix = '',
+  decimals = 0,
+  className = '',
+}: {
+  to: number
+  prefix?: string
+  suffix?: string
+  decimals?: number
+  className?: string
+}) {
+  const { ref, vis } = useInView()
+  const val = useCountUp(to, decimals, 1800, vis)
+  const formatted = val.toLocaleString('es-MX', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  })
+  return (
+    <span ref={ref} className={className}>
+      {prefix}
+      {formatted}
+      {suffix}
+    </span>
+  )
+}
+
+// Live loss ticker
+// Baseline: empresa de $30M USD/año pierde ~$2M/año por ineficiencia decisional
+// (≈ 6.5% de ingresos — percentil conservador según Bain Decision Insights 2022)
+// $2,000,000 / 365 / 24 / 3600 / 1000 ms ≈ 0.0000634 USD/ms
+function LossTicker() {
+  const [usd, setUsd] = useState(0)
+  const ratePerMs = 2_000_000 / (365 * 24 * 3600 * 1000)
+  const startRef = useRef(Date.now())
+  useEffect(() => {
+    const id = setInterval(() => {
+      setUsd((Date.now() - startRef.current) * ratePerMs)
+    }, 60)
+    return () => clearInterval(id)
+  }, [ratePerMs])
+  const formatted = usd.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+  return (
+    <div className="font-mono text-red-400 text-5xl md:text-7xl font-black tabular-nums leading-none select-none">
+      ${formatted}
+    </div>
+  )
+}
+
+function Bar({
+  label,
+  pct,
+  delay = 0,
+  color,
+}: {
+  label: string
+  pct: number
+  delay?: number
+  color: string
+}) {
+  const { ref, vis } = useInView()
+  return (
+    <div ref={ref} className="space-y-2">
+      <div className="flex justify-between text-sm text-gray-400 font-medium">
+        <span>{label}</span>
+        <span>{pct}%</span>
+      </div>
+      <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+        <div
+          style={{
+            width: vis ? `${pct}%` : '0%',
+            backgroundColor: color,
+            height: '100%',
+            borderRadius: '9999px',
+            transition: `width 1.2s cubic-bezier(0.4,0,0.2,1) ${delay}ms`,
+          }}
+        />
+      </div>
+    </div>
+  )
+}
+
+// ─── page ────────────────────────────────────────────────────────────────────
 
 export default function Home() {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 56)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   return (
     <>
+      <style>{`
+        @keyframes heroIn {
+          from { opacity: 0; transform: translateY(20px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes lineGrow {
+          from { transform: scaleX(0); }
+          to   { transform: scaleX(1); }
+        }
+        @keyframes pulseDot {
+          0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
+          50%      { box-shadow: 0 0 0 10px rgba(239,68,68,0); }
+        }
+        @keyframes greenPulse {
+          0%,100% { box-shadow: 0 0 0 0 rgba(52,211,153,0.5); }
+          50%      { box-shadow: 0 0 0 8px rgba(52,211,153,0); }
+        }
+        .h1 { animation: heroIn 0.9s ease 0.10s both; }
+        .h2 { animation: heroIn 0.9s ease 0.25s both; }
+        .h3 { animation: heroIn 0.9s ease 0.40s both; }
+        .h4 { animation: heroIn 0.9s ease 0.55s both; }
+        .h5 { animation: heroIn 0.9s ease 0.70s both; }
+        .line-grow { animation: lineGrow 1.1s cubic-bezier(0.4,0,0.2,1) 0.5s both; transform-origin: left; }
+        .dot-red  { animation: pulseDot   2s infinite; }
+        .dot-green{ animation: greenPulse 2s infinite; }
+        .lift { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .lift:hover { transform: translateY(-3px); box-shadow: 0 16px 48px rgba(0,0,0,0.10); }
+        .lift-dark:hover { transform: translateY(-3px); box-shadow: 0 16px 48px rgba(0,0,0,0.4); }
+      `}</style>
+
       {/* ── NAVBAR ─────────────────────────────────────────────────────────── */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <span className="text-xl font-bold tracking-tight text-gray-900">Decide</span>
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-400 ${
+          scrolled
+            ? 'bg-[#0C0D0F]/95 backdrop-blur-md border-b border-white/10'
+            : 'bg-transparent'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 h-16 flex items-center justify-between">
+          <span className="text-white font-black text-lg tracking-tight">DECIDE</span>
+
+          <div className="hidden md:flex items-center gap-8 text-sm text-white/50 font-medium">
+            {[
+              ['#problema', 'El problema'],
+              ['#metodologia', 'Metodología'],
+              ['#para-quien', 'Para quién'],
+            ].map(([href, label]) => (
+              <a
+                key={href}
+                href={href}
+                className="hover:text-white transition-colors duration-200"
+              >
+                {label}
+              </a>
+            ))}
+          </div>
+
           <a
-            href="#agendar"
-            className="inline-flex items-center gap-2 bg-gray-900 text-white text-sm font-semibold px-5 py-2.5 rounded-lg hover:bg-gray-800 transition-colors"
+            href="#contacto"
+            className="hidden md:inline-flex items-center gap-2 bg-white text-[#0C0D0F] text-sm font-bold px-5 py-2.5 rounded-full hover:bg-gray-100 transition-colors"
           >
             Agendar diagnóstico
           </a>
+
+          <button
+            className="md:hidden text-white p-2 space-y-1.5"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Menú"
+          >
+            <span className="block w-5 h-0.5 bg-current" />
+            <span className="block w-5 h-0.5 bg-current" />
+            <span className="block w-5 h-0.5 bg-current" />
+          </button>
         </div>
-      </header>
 
-      <main>
-        {/* ── HERO ───────────────────────────────────────────────────────────── */}
-        <section className="relative min-h-screen bg-[#0C0D0F] flex items-center overflow-hidden pt-16">
-          {/* Abstract wave SVG — fondo derecho */}
-          <div className="absolute inset-0 pointer-events-none select-none">
-            <svg
-              className="absolute right-0 top-0 h-full w-1/2 opacity-[0.12]"
-              viewBox="0 0 600 800"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-hidden="true"
-            >
-              <path d="M150,60 C280,-20 480,160 620,60 L620,800 L150,800 Z" fill="white" opacity="0.06" />
-              <path d="M-20,220 C180,80 380,380 620,220 L620,800 L-20,800 Z" fill="white" opacity="0.05" />
-              <path d="M60,420 C220,240 480,520 620,380 L620,800 L60,800 Z" fill="white" opacity="0.04" />
-              <path
-                d="M20,180 C160,120 320,280 520,180 C680,80 700,320 820,220"
-                stroke="white" strokeWidth="0.6" fill="none" opacity="0.35"
-              />
-              <path
-                d="M-40,340 C180,220 400,440 620,320 C780,200 820,440 940,320"
-                stroke="white" strokeWidth="0.6" fill="none" opacity="0.22"
-              />
-              <path
-                d="M40,520 C200,380 440,600 640,460"
-                stroke="white" strokeWidth="0.5" fill="none" opacity="0.15"
-              />
-              <rect x="390" y="120" width="0.6" height="280" fill="white" opacity="0.28" />
-              <rect x="430" y="180" width="0.6" height="180" fill="white" opacity="0.18" />
-            </svg>
-          </div>
-
-          <div className="relative max-w-6xl mx-auto px-6 py-28 lg:py-36">
-            <div className="max-w-3xl">
-              <h1 className="text-6xl lg:text-8xl font-black text-white tracking-tight leading-[0.95] mb-7">
-                La estrategia<br />no falla.
-              </h1>
-              <p className="text-2xl lg:text-3xl font-semibold text-gray-200 mb-6 leading-snug">
-                Falla el sistema que toma decisiones.
-              </p>
-              <p className="text-lg text-gray-400 max-w-xl mb-10 leading-relaxed">
-                El problema no está en las personas ni en la ejecución. Está en la
-                arquitectura invisible que determina quién decide qué, cuándo y con
-                qué autoridad.
-              </p>
+        {menuOpen && (
+          <div className="md:hidden bg-[#0C0D0F] border-t border-white/10 px-6 py-5 space-y-4">
+            {[
+              ['#problema', 'El problema'],
+              ['#metodologia', 'Metodología'],
+              ['#para-quien', 'Para quién'],
+              ['#contacto', 'Agendar diagnóstico'],
+            ].map(([href, label]) => (
               <a
-                href="#agendar"
-                className="inline-flex items-center gap-2 bg-white text-gray-900 text-base font-semibold px-7 py-4 rounded-lg hover:bg-gray-100 transition-colors"
+                key={href}
+                href={href}
+                onClick={() => setMenuOpen(false)}
+                className="block text-white/70 hover:text-white font-medium transition-colors"
               >
-                Agenda tu sesión de diagnóstico
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                {label}
+              </a>
+            ))}
+          </div>
+        )}
+      </nav>
+
+      {/* ── HERO ───────────────────────────────────────────────────────────── */}
+      <section className="relative min-h-screen bg-[#0C0D0F] flex flex-col justify-center overflow-hidden">
+        {/* Subtle grid */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage:
+              'linear-gradient(#ffffff 1px,transparent 1px),linear-gradient(90deg,#ffffff 1px,transparent 1px)',
+            backgroundSize: '80px 80px',
+          }}
+        />
+        {/* Glow orb */}
+        <div
+          className="absolute -top-40 right-0 w-[800px] h-[800px] rounded-full pointer-events-none"
+          style={{
+            background:
+              'radial-gradient(circle at 70% 30%, rgba(59,130,246,0.08) 0%, transparent 60%)',
+          }}
+        />
+
+        <div className="relative max-w-7xl mx-auto px-6 lg:px-12 pt-36 pb-28">
+          <div className="max-w-5xl">
+            <div className="h1 inline-flex items-center gap-2.5 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 text-xs text-white/40 font-bold uppercase tracking-widest mb-10">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 dot-green inline-block" />
+              Arquitectura de decisiones organizacionales
+            </div>
+
+            <h1 className="h2 text-5xl md:text-6xl lg:text-8xl font-black text-white leading-[1.02] tracking-tight mb-6">
+              Tu estrategia
+              <br />
+              <span className="text-white/25">no falla.</span>
+              <br />
+              Falla el sistema
+              <br />
+              que decide.
+            </h1>
+
+            <div className="h3 h-px bg-white line-grow w-24 mb-7 opacity-20" />
+
+            <p className="h4 text-lg md:text-xl text-white/45 max-w-xl leading-relaxed mb-10">
+              Diagnosticamos y rediseñamos la arquitectura de decisión de organizaciones en
+              crecimiento. Porque las pérdidas más grandes no vienen del mercado — vienen de
+              decisiones que nadie supo tomar a tiempo.
+            </p>
+
+            <div className="h5 flex flex-col sm:flex-row gap-4">
+              <a
+                href="#contacto"
+                className="inline-flex items-center justify-center gap-2 bg-white text-[#0C0D0F] font-bold px-8 py-4 rounded-full hover:bg-gray-100 transition-colors text-sm"
+              >
+                Solicitar diagnóstico gratuito
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
               </a>
-              <p className="mt-4 text-sm text-gray-500">
-                Primera sesión sin compromiso · Sin propuesta de venta
-              </p>
+              <a
+                href="#problema"
+                className="inline-flex items-center justify-center gap-2 border border-white/15 text-white/50 font-medium px-8 py-4 rounded-full hover:border-white/30 hover:text-white/80 transition-colors text-sm"
+              >
+                Ver el costo del problema
+              </a>
             </div>
           </div>
-        </section>
+        </div>
 
-        {/* ── DOLOR / RECONOCIMIENTO ─────────────────────────────────────────── */}
-        <section className="py-24 bg-white">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="max-w-2xl mb-14">
-              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-                El problema no está donde la empresa cree.
-              </h2>
-              <p className="text-lg text-gray-500">
-                La mayoría de las organizaciones intervienen síntomas. Nosotros
-                intervenimos la raíz.
-              </p>
-            </div>
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-20">
+          <span className="text-white text-[10px] tracking-[0.2em] uppercase">Scroll</span>
+          <div className="w-px h-10 bg-white/50" />
+        </div>
+      </section>
 
-            <div className="divide-y divide-gray-100">
-              {[
-                'Las decisiones importantes tardan semanas en cerrarse',
-                'Las reuniones terminan sin resoluciones claras',
-                'El mismo problema reaparece una y otra vez',
-                'El liderazgo absorbe decisiones que no le corresponden',
-                'Nadie sabe con certeza quién decide qué',
-              ].map((item) => (
-                <div key={item} className="flex items-center gap-5 py-5">
-                  <svg
-                    className="w-4 h-4 text-gray-400 flex-shrink-0"
-                    fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                  <span className="text-lg text-gray-700">{item}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-14 border-l-4 border-gray-900 pl-6">
-              <p className="text-2xl font-semibold text-gray-900">
-                Estos no son problemas de personas.
-                <br />Son problemas de estructura.
-              </p>
-              <p className="mt-2 text-lg text-gray-500">Y la estructura puede medirse.</p>
-            </div>
-          </div>
-        </section>
-
-        {/* ── TRES PATRONES ─────────────────────────────────────────────────── */}
-        <section className="py-24 bg-gray-50">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="max-w-2xl mb-14">
-              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-                Tres patrones que frenan a las organizaciones que crecen.
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[
-                {
-                  icon: (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
-                    </svg>
-                  ),
-                  title: 'Sobrecarga de validación',
-                  body: 'Decisiones que requieren múltiples aprobaciones innecesarias antes de ejecutarse.',
-                },
-                {
-                  icon: (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-                    </svg>
-                  ),
-                  title: 'Escalamiento indebido',
-                  body: 'El liderazgo absorbe decisiones que no le corresponden, bloqueando su agenda y la operación.',
-                },
-                {
-                  icon: (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                        d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  ),
-                  title: 'Ambigüedad en la responsabilidad',
-                  body: 'Sin claridad de quién decide qué, nadie decide bien. La responsabilidad se diluye.',
-                },
-              ].map((item) => (
-                <div key={item.title} className="bg-white rounded-xl p-8 border border-gray-200">
-                  <div className="w-10 h-10 flex items-center justify-center border border-gray-200 rounded-lg text-gray-700 mb-6">
-                    {item.icon}
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">{item.title}</h3>
-                  <p className="text-gray-500 leading-relaxed">{item.body}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── COSTO ECONÓMICO (dark) ─────────────────────────────────────────── */}
-        <section className="py-24 bg-[#111827]">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="max-w-2xl mb-14">
-              <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4 leading-tight">
-                Esto no es operativo.<br />Es económico.
-              </h2>
-              <p className="text-lg text-gray-400">
-                Cada decisión mal tomada tiene un costo real. Cada hora perdida en
-                validaciones innecesarias es capacidad que no se usa.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-16">
-              {[
-                {
-                  title: 'Capacidad operativa',
-                  body: 'Tu equipo trabaja al máximo pero produce por debajo de su potencial real.',
-                },
-                {
-                  title: 'Costo oculto',
-                  body: 'El retrabajo, las reuniones sin cierre y las validaciones tienen un precio que nadie contabiliza.',
-                },
-                {
-                  title: 'Escalabilidad',
-                  body: 'Un sistema de decisiones roto no escala. Crece el caos, no la empresa.',
-                },
-              ].map((item) => (
-                <div key={item.title} className="bg-white/5 rounded-xl p-7 border border-white/10">
-                  <h3 className="text-base font-semibold text-white mb-3">{item.title}</h3>
-                  <p className="text-gray-400 leading-relaxed text-sm">{item.body}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="border-t border-white/10 pt-12">
-              <h3 className="text-xl font-semibold text-white mb-6">
-                ¿Cuánto cuesta una decisión mal tomada?
-              </h3>
-              <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl">
-                {[
-                  'Horas de reunión sin resolución',
-                  'Retrabajo por falta de claridad',
-                  'Oportunidades que no se ejecutan',
-                  'Talento que se desgasta en fricción',
-                ].map((item) => (
-                  <li key={item} className="flex items-center gap-3 text-gray-300 text-sm">
-                    <div className="w-1.5 h-1.5 rounded-full bg-gray-500 flex-shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        {/* ── METODOLOGÍA ───────────────────────────────────────────────────── */}
-        <section className="py-24 bg-white">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="max-w-3xl mb-16">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-5">
-                Cómo trabajamos
-              </p>
-              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 leading-tight">
-                Las empresas miden resultados.
-                <br />Nosotros medimos cómo se toman las
-                <br />decisiones que los generan.
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-12">
-              {[
-                {
-                  icon: (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                        d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                    </svg>
-                  ),
-                  title: 'Trazabilidad de decisiones',
-                  body: 'Documentamos el recorrido real de cada decisión dentro de la organización.',
-                },
-                {
-                  icon: (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  ),
-                  title: 'Medición de tiempos',
-                  body: 'Cuantificamos cuánto tarda cada tipo de decisión y dónde se detiene.',
-                },
-                {
-                  icon: (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  ),
-                  title: 'Nodos de concentración',
-                  body: 'Identificamos quién concentra decisiones que no debería concentrar.',
-                },
-                {
-                  icon: (
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                  ),
-                  title: 'Retrabajo',
-                  body: 'Medimos cuánto trabajo se repite por falta de claridad en el sistema.',
-                },
-              ].map((item) => (
-                <div key={item.title} className="flex gap-5">
-                  <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center border border-gray-200 rounded-lg text-gray-700">
-                    {item.icon}
-                  </div>
-                  <div>
-                    <div className="w-full h-px bg-gray-200 mb-4" />
-                    <h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3>
-                    <p className="text-gray-500 leading-relaxed text-sm">{item.body}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── ENTREGABLES ───────────────────────────────────────────────────── */}
-        <section className="py-24 bg-gray-50">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="max-w-2xl mb-14">
-              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Qué entregamos.</h2>
-              <p className="text-lg text-gray-500">
-                Todo lo que necesitas para entender, intervenir y rediseñar cómo
-                decide tu organización.
-              </p>
-            </div>
-
-            <div className="divide-y divide-gray-200">
-              {[
-                { num: '01', title: 'Mapa del sistema', body: 'La arquitectura real de decisiones de tu organización.' },
-                { num: '02', title: 'Cuellos de botella', body: 'Los puntos exactos donde el sistema se detiene o se rompe.' },
-                { num: '03', title: 'Riesgos humanos', body: 'Las personas y roles que concentran demasiado o demasiado poco.' },
-                { num: '04', title: 'Indicadores', body: 'Métricas concretas para monitorear el sistema en el tiempo.' },
-                { num: '05', title: 'Base de rediseño', body: 'El punto de partida para intervenir con evidencia, no con intuición.' },
-              ].map((item) => (
-                <div key={item.num} className="flex items-baseline gap-8 py-6">
-                  <span className="text-xs font-mono text-gray-400 flex-shrink-0 w-8 pt-0.5">
-                    {item.num}
+      {/* ── PROBLEMA: LAS CIFRAS ───────────────────────────────────────────── */}
+      <section id="problema" className="bg-white py-28 lg:py-40">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-28 items-start">
+            {/* Left */}
+            <div>
+              <Fade>
+                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.18em]">
+                  El diagnóstico
+                </span>
+              </Fade>
+              <Fade delay={80}>
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-[#0C0D0F] leading-tight mt-4 mb-6">
+                  Las decisiones
+                  <br />
+                  postergadas
+                  <br />
+                  tienen precio.
+                </h2>
+              </Fade>
+              <Fade delay={160}>
+                <p className="text-lg text-gray-500 leading-relaxed mb-6">
+                  En una empresa de $20–50 M USD en ingresos, la ineficiencia en la toma de
+                  decisiones no es un problema de actitud. Es un problema de arquitectura. Y
+                  tiene un costo calculable.
+                </p>
+              </Fade>
+              <Fade delay={240}>
+                <p className="text-sm text-gray-400 leading-relaxed border-l-2 border-gray-200 pl-4 italic">
+                  Bain &amp; Company estima que una empresa con 500 empleados ejecuta en
+                  promedio 2,300 decisiones de negocio relevantes al año. El 40% de esas
+                  decisiones se revierten, paralizan o replantean antes de generar resultado.
+                  <br />
+                  <span className="not-italic text-gray-300 text-xs mt-1 block">
+                    Fuente: Bain Decision Insights Survey, 2022
                   </span>
-                  <div className="flex-1 flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-10">
-                    <h3 className="font-semibold text-gray-900 sm:min-w-[200px]">{item.title}</h3>
-                    <p className="text-gray-500 text-sm">{item.body}</p>
+                </p>
+              </Fade>
+            </div>
+
+            {/* Right — stat cards */}
+            <div className="space-y-5">
+              {[
+                {
+                  num: 40,
+                  suffix: '%',
+                  label: 'de las decisiones estratégicas se revierten antes de completarse',
+                  sub: 'Cada reversión consume entre 3 y 8 semanas de trabajo ejecutivo perdido. No en el mercado — adentro.',
+                },
+                {
+                  num: 70,
+                  suffix: '%',
+                  label: 'del tiempo directivo se consume en reuniones de alineación y escaladas',
+                  sub: 'No en estrategia ni en ejecución. En consensuar lo que ya debería estar decidido. (Fuente: McKinsey & Company, 2023)',
+                },
+                {
+                  num: 3,
+                  suffix: '×',
+                  label: 'más tiempo tarda una decisión sin claridad de autoridad',
+                  sub: 'El costo no es solo tiempo: es velocidad de respuesta al mercado y ventana de oportunidad cerrada.',
+                },
+              ].map(({ num, suffix, label, sub }, i) => (
+                <Fade key={i} delay={i * 100}>
+                  <div className="border border-gray-100 rounded-2xl p-6 lift cursor-default">
+                    <div className="flex items-start gap-5">
+                      <div className="text-[2.6rem] font-black text-[#0C0D0F] leading-none min-w-[88px] tabular-nums">
+                        <Counter to={num} suffix={suffix} />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-[#0C0D0F] leading-snug mb-1.5 text-sm md:text-base">
+                          {label}
+                        </p>
+                        <p className="text-xs text-gray-400 leading-relaxed">{sub}</p>
+                      </div>
+                    </div>
+                  </div>
+                </Fade>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── IMPACTO FINANCIERO REAL (DARK) ─────────────────────────────────── */}
+      <section className="bg-[#0C0D0F] py-28 lg:py-40 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+          {/* Heading */}
+          <div className="text-center mb-20">
+            <Fade>
+              <span className="text-[11px] font-bold text-gray-600 uppercase tracking-[0.18em]">
+                Impacto financiero
+              </span>
+            </Fade>
+            <Fade delay={80}>
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-tight mt-4 mb-5">
+                Cuánto está perdiendo
+                <br />
+                tu organización ahora mismo
+              </h2>
+            </Fade>
+            <Fade delay={160}>
+              <p className="text-white/35 max-w-2xl mx-auto text-base leading-relaxed">
+                Estimado conservador para una empresa con $30 M USD en ingresos anuales, usando
+                la metodología de costo de ineficiencia decisional de Bain &amp; Company
+                (percentil 25 — el escenario más optimista).
+              </p>
+            </Fade>
+          </div>
+
+          {/* Live ticker */}
+          <Fade delay={200}>
+            <div className="relative border border-red-500/20 bg-red-950/10 rounded-3xl p-8 md:p-12 mb-14">
+              <div
+                className="absolute inset-0 rounded-3xl pointer-events-none"
+                style={{
+                  background:
+                    'radial-gradient(ellipse at 50% 100%, rgba(239,68,68,0.06) 0%, transparent 70%)',
+                }}
+              />
+              <div className="relative">
+                <div className="flex items-center gap-3 mb-5">
+                  <span className="w-2 h-2 rounded-full bg-red-500 dot-red inline-block flex-shrink-0" />
+                  <span className="text-[11px] text-red-400 font-bold uppercase tracking-[0.16em]">
+                    Pérdida estimada acumulada desde que abriste esta página
+                  </span>
+                </div>
+                <LossTicker />
+                <div className="flex flex-wrap gap-x-6 gap-y-1 mt-5">
+                  {[
+                    ['~$2 M', 'al año'],
+                    ['~$5,479', 'al día'],
+                    ['~$228', 'por hora'],
+                    ['~$3.80', 'por minuto'],
+                  ].map(([val, unit]) => (
+                    <span key={unit} className="text-white/20 font-mono text-xs">
+                      {val}
+                      <span className="text-white/15 ml-1">{unit}</span>
+                    </span>
+                  ))}
+                </div>
+                <p className="text-white/15 text-xs mt-3">
+                  * Basado en percentil conservador P25 de Bain Decision Inefficiency Index.
+                  Empresas en P75 pierden hasta $6.2 M/año.
+                </p>
+              </div>
+            </div>
+          </Fade>
+
+          {/* Two columns */}
+          <div className="grid md:grid-cols-2 gap-12 lg:gap-20">
+            {/* Bars */}
+            <div>
+              <Fade>
+                <h3 className="text-lg font-bold text-white mb-2">¿A dónde va el dinero perdido?</h3>
+                <p className="text-white/35 text-sm mb-8 leading-relaxed">
+                  Desglose del costo de ineficiencia decisional sobre nómina directiva, capital
+                  inmovilizado en proyectos sin dueño y oportunidades no capturadas por lentitud.
+                </p>
+              </Fade>
+              <div className="space-y-6">
+                <Bar label="Retrabajo por decisiones revertidas" pct={38} delay={0}   color="#ef4444" />
+                <Bar label="Reuniones de escalación y alineación" pct={27} delay={150} color="#f97316" />
+                <Bar label="Iniciativas paralizadas sin dueño"    pct={21} delay={300} color="#eab308" />
+                <Bar label="Oportunidades no capturadas"          pct={14} delay={450} color="#6366f1" />
+              </div>
+              <p className="text-white/15 text-xs mt-6">
+                Distribución basada en Bain &amp; Company "The Decision Audit" (2021) y McKinsey
+                "Untangling your organization's decision making" (2019).
+              </p>
+            </div>
+
+            {/* Cost cards */}
+            <div className="space-y-4">
+              {[
+                {
+                  icon: '↩',
+                  title: 'Decisión estratégica revertida (promedio)',
+                  cost: '$47,000 USD',
+                  desc: 'Una decisión revertida a los 60 días cuesta el equivalente a 3 meses de trabajo de un equipo de 5 personas: horas directivas, comunicaciones, retrabajo de ejecución y costo de oportunidad.',
+                  color: '#ef4444',
+                },
+                {
+                  icon: '⏱',
+                  title: 'Decisión demorada 30 días adicionales',
+                  cost: '$12,000 USD',
+                  desc: 'Considerando solo el tiempo directivo en seguimiento y escaladas, más el costo de oportunidad de no actuar. Sin contar pérdida de ventaja competitiva ni moral del equipo.',
+                  color: '#f97316',
+                },
+                {
+                  icon: '🔺',
+                  title: 'Costo anual de escaladas evitables',
+                  cost: '$380,000 USD',
+                  desc: 'Una empresa con 50 decisiones escaladas al mes, a un costo de 2 semanas de tiempo de dirección por escalada (3 personas × $8,000/mes), pierde esto cada año solo en coordinación.',
+                  color: '#6366f1',
+                },
+              ].map(({ icon, title, cost, desc, color }, i) => (
+                <Fade key={i} delay={i * 100}>
+                  <div className="border border-white/8 rounded-2xl p-6 lift-dark cursor-default transition-all hover:border-white/15">
+                    <div className="flex items-start justify-between gap-4 mb-3">
+                      <div>
+                        <span className="text-lg mb-1 block">{icon}</span>
+                        <p className="text-white/50 text-sm font-semibold">{title}</p>
+                      </div>
+                      <span
+                        className="text-xl font-black tabular-nums whitespace-nowrap"
+                        style={{ color }}
+                      >
+                        {cost}
+                      </span>
+                    </div>
+                    <p className="text-white/25 text-xs leading-relaxed">{desc}</p>
+                  </div>
+                </Fade>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── TRES PATRONES ──────────────────────────────────────────────────── */}
+      <section className="bg-gray-50 py-28 lg:py-40">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+          <div className="max-w-3xl mb-16">
+            <Fade>
+              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.18em]">
+                Lo que encontramos
+              </span>
+            </Fade>
+            <Fade delay={80}>
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-[#0C0D0F] leading-tight mt-4 mb-6">
+                Tres patrones que
+                <br />
+                destruyen valor
+                <br />
+                en silencio.
+              </h2>
+            </Fade>
+            <Fade delay={160}>
+              <p className="text-lg text-gray-500 leading-relaxed">
+                No son fallas de talento. Son fallas de sistema. Y se repiten en prácticamente
+                todas las organizaciones que crecieron rápido sin rediseñar cómo deciden.
+              </p>
+            </Fade>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                num: '01',
+                title: 'Nadie sabe quién decide',
+                body:
+                  'Las decisiones se delegan sin criterio ni autoridad real. El resultado: todos opinan, nadie actúa. Los proyectos se mueven en círculos hasta que alguien impone una dirección — no porque sea la correcta, sino porque tiene más rango.',
+                signal: 'Señal: reuniones que terminan con "lo vemos la próxima semana".',
+              },
+              {
+                num: '02',
+                title: 'La información no llega a quien decide',
+                body:
+                  'Los datos existen, pero están fragmentados entre áreas. Quien decide no tiene el contexto completo, y quien tiene el contexto no tiene autoridad. El gap entre dato y acción cuesta semanas y produce decisiones con información de hace tres meses.',
+                signal: 'Señal: decisiones estratégicas basadas en reportes del trimestre anterior.',
+              },
+              {
+                num: '03',
+                title: 'El riesgo de decidir es mayor que el de no decidir',
+                body:
+                  'En culturas donde las malas decisiones se castigan pero la parálisis se tolera, el comportamiento racional es no decidir. El incentivo perverso está integrado en la organización. Los mejores líderes esperan aprobación para moverse.',
+                signal: 'Señal: los mejores talentos dicen "necesito más alineación arriba" antes de actuar.',
+              },
+            ].map(({ num, title, body, signal }, i) => (
+              <Fade key={i} delay={i * 100}>
+                <div className="bg-white border border-gray-100 rounded-3xl p-8 h-full flex flex-col lift">
+                  <span className="text-[11px] font-black text-gray-300 tracking-widest">{num}</span>
+                  <h3 className="text-xl font-black text-[#0C0D0F] mt-3 mb-4 leading-snug">
+                    {title}
+                  </h3>
+                  <p className="text-gray-500 text-sm leading-relaxed flex-1">{body}</p>
+                  <div className="border-t border-gray-100 pt-4 mt-6">
+                    <p className="text-xs text-gray-400 italic">{signal}</p>
                   </div>
                 </div>
-              ))}
-            </div>
+              </Fade>
+            ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* ── RESULTADOS ────────────────────────────────────────────────────── */}
-        <section className="py-24 bg-white">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="max-w-2xl mb-14">
-              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-                Qué cambia cuando el sistema se corrige.
-              </h2>
-              <p className="text-lg text-gray-500">
-                El resultado no es un reporte. Es una organización que decide mejor.
-              </p>
+      {/* ── METODOLOGÍA ────────────────────────────────────────────────────── */}
+      <section id="metodologia" className="bg-white py-28 lg:py-40">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-28 items-start">
+            {/* Left */}
+            <div className="lg:sticky lg:top-28">
+              <Fade>
+                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.18em]">
+                  Cómo trabajamos
+                </span>
+              </Fade>
+              <Fade delay={80}>
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-[#0C0D0F] leading-tight mt-4 mb-6">
+                  Tres fases.
+                  <br />
+                  Un sistema
+                  <br />
+                  que funciona.
+                </h2>
+              </Fade>
+              <Fade delay={160}>
+                <p className="text-lg text-gray-500 leading-relaxed mb-6">
+                  No llegamos con un framework genérico. Llegamos a entender cómo fluye la
+                  autoridad real en tu organización — no el organigrama, sino quién realmente
+                  decide y cómo.
+                </p>
+              </Fade>
+              <Fade delay={240}>
+                <p className="text-sm text-gray-400 leading-relaxed">
+                  El proceso completo toma entre 9 y 13 semanas. Al final, tu organización tiene
+                  un sistema operativo de decisiones — no un PowerPoint sobre liderazgo.
+                </p>
+              </Fade>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Right — timeline */}
+            <div className="space-y-0 pt-2">
               {[
-                { title: 'Menos fricción', body: 'Las decisiones fluyen sin obstáculos innecesarios.' },
-                { title: 'Más velocidad', body: 'El tiempo entre decisión y ejecución se reduce significativamente.' },
-                { title: 'Menos retrabajo', body: 'Cada tarea se hace una vez, bien, con claridad desde el inicio.' },
-                { title: 'Mejor distribución', body: 'Las decisiones llegan a quien debe tomarlas, no a quien puede tomarlas.' },
-                { title: 'Más control', body: 'El liderazgo recupera visibilidad sin necesidad de microgestionar.' },
-              ].map((item) => (
-                <div key={item.title} className="border-l-2 border-gray-900 pl-6 py-1">
-                  <h3 className="font-semibold text-gray-900 mb-2">{item.title}</h3>
-                  <p className="text-gray-500 text-sm leading-relaxed">{item.body}</p>
-                </div>
+                {
+                  phase: 'Fase 1',
+                  weeks: '2–3 semanas',
+                  title: 'Diagnóstico de arquitectura decisional',
+                  body: 'Mapeo de los 20–30 tipos de decisión más críticos de la organización. Identificación de cuellos de botella, zonas de ambigüedad y patrones de escalación. Entrevistas con el equipo directivo y líderes clave.',
+                  deliverable: 'Radiografía decisional completa.',
+                },
+                {
+                  phase: 'Fase 2',
+                  weeks: '3–4 semanas',
+                  title: 'Rediseño del sistema',
+                  body: 'Co-diseño con el equipo directivo de la nueva arquitectura: marcos de autoridad, criterios de decisión por nivel, procesos de escalación legítima y mecanismos de accountability.',
+                  deliverable: 'Matriz RACI ejecutiva + criterios de decisión operativos.',
+                },
+                {
+                  phase: 'Fase 3',
+                  weeks: '4–6 semanas',
+                  title: 'Implementación y calibración',
+                  body: 'Acompañamiento en la instalación del nuevo sistema. Facilitación de los primeros ciclos de decisión bajo la nueva arquitectura. Ajuste fino basado en fricción real del equipo en operación.',
+                  deliverable: 'Sistema en operación + playbook para líderes.',
+                },
+              ].map(({ phase, weeks, title, body, deliverable }, i, arr) => (
+                <Fade key={i} delay={i * 100}>
+                  <div
+                    className={`relative pl-9 pb-10 ${
+                      i < arr.length - 1
+                        ? 'before:absolute before:left-[10px] before:top-5 before:bottom-0 before:w-px before:bg-gray-100'
+                        : ''
+                    }`}
+                  >
+                    <div className="absolute left-0 top-1 w-5 h-5 rounded-full bg-[#0C0D0F] border-[3px] border-white ring-1 ring-gray-200" />
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
+                      <span className="text-[11px] font-black text-gray-300 uppercase tracking-widest">
+                        {phase}
+                      </span>
+                      <span className="text-gray-200 text-xs">·</span>
+                      <span className="text-xs text-gray-400">{weeks}</span>
+                    </div>
+                    <h3 className="text-lg font-black text-[#0C0D0F] mb-2">{title}</h3>
+                    <p className="text-gray-500 text-sm leading-relaxed mb-3">{body}</p>
+                    <div className="inline-flex items-center gap-1.5 bg-gray-50 border border-gray-100 rounded-full px-3 py-1">
+                      <svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2.5}
+                        className="text-emerald-500"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-xs text-gray-500 font-medium">{deliverable}</span>
+                    </div>
+                  </div>
+                </Fade>
               ))}
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* ── PARA QUIÉN ────────────────────────────────────────────────────── */}
-        <section className="py-24 bg-gray-50">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="max-w-2xl mb-14">
-              <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Para quién es esto.</h2>
-              <p className="text-lg text-gray-500">
-                Este diagnóstico está diseñado para quienes tienen la autoridad y la
-                necesidad de intervenir el sistema.
+      {/* ── ENTREGABLES ────────────────────────────────────────────────────── */}
+      <section className="bg-[#0C0D0F] py-28 lg:py-40">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+          <div className="text-center mb-16">
+            <Fade>
+              <span className="text-[11px] font-bold text-gray-600 uppercase tracking-[0.18em]">
+                Lo que recibes
+              </span>
+            </Fade>
+            <Fade delay={80}>
+              <h2 className="text-4xl md:text-5xl font-black text-white mt-4 mb-4">
+                Entregables concretos
+              </h2>
+            </Fade>
+            <Fade delay={160}>
+              <p className="text-white/35 max-w-xl mx-auto text-base">
+                No consultorías de presentaciones. Sistemas operativos que tu equipo puede usar
+                el día siguiente de la implementación.
+              </p>
+            </Fade>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              {
+                icon: '◎',
+                title: 'Mapa de arquitectura decisional',
+                desc: 'Visualización completa de los flujos de decisión reales vs. los que deberían existir en tu organización.',
+              },
+              {
+                icon: '◈',
+                title: 'Matriz RACI ejecutiva',
+                desc: 'Claridad de quién decide, quién recomienda, quién ejecuta y quién informa en cada dominio estratégico.',
+              },
+              {
+                icon: '◐',
+                title: 'Criterios de decisión por nivel',
+                desc: 'Guías operativas específicas para cada nivel de liderazgo: qué pueden decidir solos y qué requiere alineación.',
+              },
+              {
+                icon: '◷',
+                title: 'Protocolo de escalación',
+                desc: 'Proceso claro para escalar decisiones legítimamente — sin crear dependencia ni parálisis organizacional.',
+              },
+              {
+                icon: '◉',
+                title: 'Panel de accountability decisional',
+                desc: 'Sistema de seguimiento para asegurar que las decisiones tomadas se ejecuten, midan y generen aprendizaje.',
+              },
+              {
+                icon: '◌',
+                title: 'Playbook de implementación',
+                desc: 'Manual de instalación del nuevo sistema para líderes y equipos, con casos de uso reales de tu organización.',
+              },
+            ].map(({ icon, title, desc }, i) => (
+              <Fade key={i} delay={i * 70}>
+                <div className="border border-white/8 rounded-2xl p-6 group hover:border-white/18 transition-colors cursor-default">
+                  <span className="text-2xl text-white/15 group-hover:text-white/30 transition-colors block mb-4">
+                    {icon}
+                  </span>
+                  <h3 className="text-white font-bold mb-2 text-sm">{title}</h3>
+                  <p className="text-white/30 text-sm leading-relaxed">{desc}</p>
+                </div>
+              </Fade>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── PARA QUIÉN ─────────────────────────────────────────────────────── */}
+      <section id="para-quien" className="bg-gray-50 py-28 lg:py-40">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+          <div className="max-w-3xl mb-14">
+            <Fade>
+              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.18em]">
+                Para quién es esto
+              </span>
+            </Fade>
+            <Fade delay={80}>
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-[#0C0D0F] mt-4 mb-6 leading-tight">
+                Organizaciones que
+                <br />
+                crecieron más rápido
+                <br />
+                de lo que diseñaron
+                <br />
+                sus sistemas.
+              </h2>
+            </Fade>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4 mb-10">
+            {[
+              'Empresas de $15 M–$200 M USD en ingresos que pasaron de startup a operación mediana sin rediseñar cómo toman decisiones.',
+              'Organizaciones post-fusión o post-adquisición donde dos culturas de decisión conviven sin un sistema unificado.',
+              'Negocios familiares en transición generacional donde la autoridad formal y la autoridad real están desalineadas.',
+              'Empresas en mercados de alta velocidad donde la lentitud decisional ya está costando participación de mercado.',
+            ].map((text, i) => (
+              <Fade key={i} delay={i * 80}>
+                <div className="bg-white border border-gray-100 rounded-2xl p-6 flex gap-4 lift">
+                  <span className="text-emerald-500 mt-0.5 flex-shrink-0">
+                    <svg
+                      width="18"
+                      height="18"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2.5}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </span>
+                  <p className="text-gray-600 leading-relaxed text-sm">{text}</p>
+                </div>
+              </Fade>
+            ))}
+          </div>
+
+          <Fade delay={200}>
+            <div className="bg-amber-50 border border-amber-100 rounded-2xl p-6 flex gap-4">
+              <span className="text-amber-400 flex-shrink-0 mt-0.5">
+                <svg
+                  width="18"
+                  height="18"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </span>
+              <p className="text-amber-700 text-sm leading-relaxed">
+                <strong>Esto no es para ti</strong> si buscas un taller de liderazgo o una
+                certificación en metodologías ágiles. Trabajamos con organizaciones que tienen un
+                problema real de velocidad decisional y están dispuestas a cambiar la estructura —
+                no solo el discurso.
               </p>
             </div>
+          </Fade>
+        </div>
+      </section>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-gray-900 rounded-xl p-8 text-white">
-                <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-6">Perfiles</p>
-                <ul className="space-y-4">
-                  {['Dueños de empresa', 'CEOs', 'CFOs y directores'].map((item) => (
-                    <li key={item} className="flex items-center gap-3 text-gray-200">
-                      <div className="w-1.5 h-1.5 rounded-full bg-gray-500 flex-shrink-0" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="bg-white rounded-xl p-8 border border-gray-200">
-                <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-6">Situaciones</p>
-                <ul className="space-y-4">
-                  {[
-                    'Crecimiento desordenado',
-                    'Centralización excesiva',
-                    'Falta de cierre en decisiones',
-                    'Problemas de escala',
-                  ].map((item) => (
-                    <li key={item} className="flex items-center gap-3 text-gray-700">
-                      <svg
-                        className="w-4 h-4 text-gray-400 flex-shrink-0"
-                        fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── CTA FINAL (dark) ──────────────────────────────────────────────── */}
-        <section id="agendar" className="py-32 bg-[#0C0D0F] relative overflow-hidden">
-          {/* Sutil wave de fondo */}
-          <div className="absolute inset-0 pointer-events-none select-none">
-            <svg
-              className="absolute right-0 bottom-0 w-1/2 h-full opacity-[0.07]"
-              viewBox="0 0 600 700" fill="none" xmlns="http://www.w3.org/2000/svg"
-              aria-hidden="true"
-            >
-              <path d="M0,200 C200,80 400,320 620,180 L620,700 L0,700 Z" fill="white" />
-              <path d="M0,380 C180,220 420,500 620,340 L620,700 L0,700 Z" fill="white" opacity="0.6" />
-            </svg>
-          </div>
-
-          <div className="relative max-w-6xl mx-auto px-6 text-center">
-            <h2 className="text-4xl lg:text-6xl font-black text-white tracking-tight leading-tight mb-6">
-              El sistema puede medirse.
-              <br />Puede entenderse.
-              <br />Puede rediseñarse.
+      {/* ── CTA FINAL ──────────────────────────────────────────────────────── */}
+      <section id="contacto" className="bg-[#0C0D0F] py-28 lg:py-40">
+        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center">
+          <Fade>
+            <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-white leading-[1.05] mb-6">
+              El costo de no actuar
+              <br />
+              <span className="text-white/25">ya está corriendo.</span>
             </h2>
-            <p className="text-lg text-gray-400 max-w-xl mx-auto mb-3">
-              Si tu organización pierde velocidad o control, el problema no es solo
-              operativo. Es estructural.
+          </Fade>
+          <Fade delay={100}>
+            <p className="text-xl text-white/35 leading-relaxed mb-12 max-w-2xl mx-auto">
+              Una sesión de diagnóstico de 60 minutos es suficiente para identificar si tienes
+              un problema de arquitectura decisional y qué tan costoso te está saliendo ignorarlo.
             </p>
-            <p className="text-base text-gray-500 mb-10">
-              La primera conversación es un diagnóstico real.
-              <br />Sin compromiso. Sin propuesta de venta.
-            </p>
-            {/* Reemplaza href="#" con tu URL de Calendly o agenda */}
+          </Fade>
+          <Fade delay={200}>
             <a
-              href="#"
-              className="inline-flex items-center gap-2 bg-white text-gray-900 text-base font-semibold px-8 py-4 rounded-lg hover:bg-gray-100 transition-colors"
+              href="mailto:hola@decide.mx"
+              className="inline-flex items-center justify-center gap-2 bg-white text-[#0C0D0F] font-bold px-10 py-5 rounded-full hover:bg-gray-100 transition-colors text-base"
             >
-              Agenda tu sesión de diagnóstico
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              Solicitar diagnóstico gratuito
+              <svg
+                width="18"
+                height="18"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2.5}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
             </a>
-          </div>
-        </section>
-      </main>
+            <p className="text-white/20 text-xs mt-5">
+              Sin compromiso · 60 minutos · Solo para organizaciones calificadas
+            </p>
+          </Fade>
+        </div>
+      </section>
 
       {/* ── FOOTER ─────────────────────────────────────────────────────────── */}
-      <footer className="bg-[#0C0D0F] border-t border-white/5 py-8">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="font-semibold text-gray-600">Decide</span>
-          <span className="text-gray-600 text-sm">Arquitectura de decisiones organizacionales</span>
-          <span className="text-gray-600 text-sm">© 2025</span>
+      <footer className="bg-[#080809] border-t border-white/5 py-10">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-4">
+          <span className="text-white/20 font-black text-sm">DECIDE</span>
+          <p className="text-white/15 text-xs text-center">
+            © {new Date().getFullYear()} Decide · Arquitectura de decisiones organizacionales
+          </p>
+          <a
+            href="mailto:hola@decide.mx"
+            className="text-white/20 text-xs hover:text-white/40 transition-colors"
+          >
+            hola@decide.mx
+          </a>
         </div>
       </footer>
     </>
