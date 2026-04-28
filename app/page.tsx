@@ -221,7 +221,9 @@ export default function Home() {
           </div>
 
           <a
-            href="#contacto"
+            href="https://calendly.com/karosadoga/30min"
+            target="_blank"
+            rel="noopener noreferrer"
             className="hidden md:inline-flex items-center gap-2 bg-white text-[#0C0D0F] text-sm font-bold px-5 py-2.5 rounded-full hover:bg-gray-100 transition-colors"
           >
             Agendar diagnóstico
@@ -306,10 +308,12 @@ export default function Home() {
 
             <div className="h5 flex flex-col sm:flex-row gap-4">
               <a
-                href="#contacto"
+                href="https://calendly.com/karosadoga/30min"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 bg-white text-[#0C0D0F] font-bold px-8 py-4 rounded-full hover:bg-gray-100 transition-colors text-sm"
               >
-                Solicitar diagnóstico gratuito
+                Agendar diagnóstico gratuito
                 <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                 </svg>
@@ -874,31 +878,39 @@ export default function Home() {
             </h2>
           </Fade>
           <Fade delay={100}>
-            <p className="text-xl text-white/35 leading-relaxed mb-12 max-w-2xl mx-auto">
-              Una sesión de diagnóstico de 60 minutos es suficiente para identificar si tienes
+            <p className="text-xl text-white/35 leading-relaxed mb-10 max-w-2xl mx-auto">
+              Una sesión de diagnóstico de 30 minutos es suficiente para identificar si tienes
               un problema de arquitectura decisional y qué tan costoso te está saliendo ignorarlo.
             </p>
           </Fade>
           <Fade delay={200}>
             <a
-              href="mailto:hola@estructuraestrategica.com"
+              href="https://calendly.com/karosadoga/30min"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 bg-white text-[#0C0D0F] font-bold px-10 py-5 rounded-full hover:bg-gray-100 transition-colors text-base"
             >
-              Solicitar diagnóstico gratuito
-              <svg
-                width="18"
-                height="18"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2.5}
-              >
+              Agendar sesión de diagnóstico
+              <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
               </svg>
             </a>
             <p className="text-white/20 text-xs mt-5">
-              Sin compromiso · 60 minutos · Solo para organizaciones calificadas
+              Sin compromiso · 30 minutos · Solo para organizaciones calificadas
             </p>
+          </Fade>
+
+          {/* Calendly inline widget */}
+          <Fade delay={350}>
+            <div className="mt-16 rounded-2xl overflow-hidden border border-white/10" style={{ minHeight: '700px' }}>
+              <iframe
+                src="https://calendly.com/karosadoga/30min?embed_domain=estructuraestrategica.com&embed_type=Inline&hide_landing_page_details=1&hide_gdpr_banner=1&background_color=0C0D0F&text_color=ffffff&primary_color=ffffff"
+                width="100%"
+                height="700"
+                frameBorder="0"
+                title="Agendar diagnóstico — Estructura Estratégica"
+              />
+            </div>
           </Fade>
         </div>
       </section>
