@@ -9,11 +9,11 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'Decide — Arquitectura de decisiones organizacionales',
+  title: 'Estructura Estratégica — Arquitectura de decisiones organizacionales',
   description:
     'La estrategia no falla. Falla el sistema que toma decisiones. Diagnóstico y rediseño de sistemas de decisión para organizaciones en crecimiento.',
   openGraph: {
-    title: 'Decide — Arquitectura de decisiones organizacionales',
+    title: 'Estructura Estratégica — Arquitectura de decisiones organizacionales',
     description: 'La estrategia no falla. Falla el sistema que toma decisiones.',
     type: 'website',
   },
