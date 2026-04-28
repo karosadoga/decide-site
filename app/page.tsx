@@ -130,7 +130,7 @@ function Bar({
   const { ref, vis } = useInView()
   return (
     <div ref={ref} className="space-y-2">
-      <div className="flex justify-between text-sm text-gray-400 font-medium">
+      <div className="flex justify-between text-sm text-[#8B7A68] font-medium">
         <span>{label}</span>
         <span>{pct}%</span>
       </div>
@@ -197,7 +197,7 @@ export default function Home() {
       <nav
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-400 ${
           scrolled
-            ? 'bg-[#0C0D0F]/95 backdrop-blur-md border-b border-white/10'
+            ? 'bg-[#1A1510]/95 backdrop-blur-md border-b border-white/10'
             : 'bg-transparent'
         }`}
       >
@@ -224,7 +224,7 @@ export default function Home() {
             href="https://calendly.com/karosadoga/30min"
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden md:inline-flex items-center gap-2 bg-white text-[#0C0D0F] text-sm font-bold px-5 py-2.5 rounded-full hover:bg-gray-100 transition-colors"
+            className="hidden md:inline-flex items-center gap-2 bg-[#B8935A] text-white text-sm font-bold px-5 py-2.5 rounded-full hover:bg-[#A68245] transition-colors"
           >
             Agendar diagnóstico
           </a>
@@ -241,7 +241,7 @@ export default function Home() {
         </div>
 
         {menuOpen && (
-          <div className="md:hidden bg-[#0C0D0F] border-t border-white/10 px-6 py-5 space-y-4">
+          <div className="md:hidden bg-[#1A1510] border-t border-white/10 px-6 py-5 space-y-4">
             {[
               ['#problema', 'El problema'],
               ['#metodologia', 'Metodología'],
@@ -262,7 +262,7 @@ export default function Home() {
       </nav>
 
       {/* ── HERO ───────────────────────────────────────────────────────────── */}
-      <section className="relative min-h-screen bg-[#0C0D0F] flex flex-col justify-center overflow-hidden">
+      <section className="relative min-h-screen bg-[#1A1510] flex flex-col justify-center overflow-hidden">
         {/* Subtle grid */}
         <div
           className="absolute inset-0 opacity-[0.03]"
@@ -298,7 +298,7 @@ export default function Home() {
               que decide.
             </h1>
 
-            <div className="h3 h-px bg-white line-grow w-24 mb-7 opacity-20" />
+            <div className="h3 h-px bg-[#B8935A] line-grow w-24 mb-7" />
 
             <p className="h4 text-lg md:text-xl text-white/45 max-w-xl leading-relaxed mb-10">
               Diagnosticamos y rediseñamos la arquitectura de decisión de organizaciones en
@@ -311,7 +311,7 @@ export default function Home() {
                 href="https://calendly.com/karosadoga/30min"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 bg-white text-[#0C0D0F] font-bold px-8 py-4 rounded-full hover:bg-gray-100 transition-colors text-sm"
+                className="inline-flex items-center justify-center gap-2 bg-white text-[#1A1510] font-bold px-8 py-4 rounded-full hover:bg-[#EDE6DB] transition-colors text-sm"
               >
                 Agendar diagnóstico gratuito
                 <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -341,12 +341,12 @@ export default function Home() {
             {/* Left */}
             <div>
               <Fade>
-                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.18em]">
+                <span className="text-[11px] font-bold text-[#8B7A68] uppercase tracking-[0.18em]">
                   El diagnóstico
                 </span>
               </Fade>
               <Fade delay={80}>
-                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-[#0C0D0F] leading-tight mt-4 mb-6">
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-[#1A1510] leading-tight mt-4 mb-6">
                   Las decisiones
                   <br />
                   postergadas
@@ -355,19 +355,19 @@ export default function Home() {
                 </h2>
               </Fade>
               <Fade delay={160}>
-                <p className="text-lg text-gray-500 leading-relaxed mb-6">
+                <p className="text-lg text-[#6B5745] leading-relaxed mb-6">
                   En una empresa de $20–50 M USD en ingresos, la ineficiencia en la toma de
                   decisiones no es un problema de actitud. Es un problema de arquitectura. Y
                   tiene un costo calculable.
                 </p>
               </Fade>
               <Fade delay={240}>
-                <p className="text-sm text-gray-400 leading-relaxed border-l-2 border-gray-200 pl-4 italic">
+                <p className="text-sm text-[#8B7A68] leading-relaxed border-l-2 border-[#E8DDD0] pl-4 italic">
                   Bain &amp; Company estima que una empresa con 500 empleados ejecuta en
                   promedio 2,300 decisiones de negocio relevantes al año. El 40% de esas
                   decisiones se revierten, paralizan o replantean antes de generar resultado.
                   <br />
-                  <span className="not-italic text-gray-300 text-xs mt-1 block">
+                  <span className="not-italic text-[#A89585] text-xs mt-1 block">
                     Fuente: Bain Decision Insights Survey, 2022
                   </span>
                 </p>
@@ -397,16 +397,16 @@ export default function Home() {
                 },
               ].map(({ num, suffix, label, sub }, i) => (
                 <Fade key={i} delay={i * 100}>
-                  <div className="border border-gray-100 rounded-2xl p-6 lift cursor-default">
+                  <div className="border border-[#EDE6DB] rounded-2xl p-6 lift cursor-default">
                     <div className="flex items-start gap-5">
-                      <div className="text-[2.6rem] font-black text-[#0C0D0F] leading-none min-w-[88px] tabular-nums">
+                      <div className="text-[2.6rem] font-black text-[#1A1510] leading-none min-w-[88px] tabular-nums">
                         <Counter to={num} suffix={suffix} />
                       </div>
                       <div>
-                        <p className="font-semibold text-[#0C0D0F] leading-snug mb-1.5 text-sm md:text-base">
+                        <p className="font-semibold text-[#1A1510] leading-snug mb-1.5 text-sm md:text-base">
                           {label}
                         </p>
-                        <p className="text-xs text-gray-400 leading-relaxed">{sub}</p>
+                        <p className="text-xs text-[#8B7A68] leading-relaxed">{sub}</p>
                       </div>
                     </div>
                   </div>
@@ -418,12 +418,12 @@ export default function Home() {
       </section>
 
       {/* ── IMPACTO FINANCIERO REAL (DARK) ─────────────────────────────────── */}
-      <section className="bg-[#0C0D0F] py-28 lg:py-40 overflow-hidden">
+      <section className="bg-[#1A1510] py-28 lg:py-40 overflow-hidden">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           {/* Heading */}
           <div className="text-center mb-20">
             <Fade>
-              <span className="text-[11px] font-bold text-gray-600 uppercase tracking-[0.18em]">
+              <span className="text-[11px] font-bold text-[#4A3728] uppercase tracking-[0.18em]">
                 Impacto financiero
               </span>
             </Fade>
@@ -554,16 +554,16 @@ export default function Home() {
       </section>
 
       {/* ── TRES PATRONES ──────────────────────────────────────────────────── */}
-      <section className="bg-gray-50 py-28 lg:py-40">
+      <section className="bg-[#F2EBE0] py-28 lg:py-40">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="max-w-3xl mb-16">
             <Fade>
-              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.18em]">
+              <span className="text-[11px] font-bold text-[#8B7A68] uppercase tracking-[0.18em]">
                 Lo que encontramos
               </span>
             </Fade>
             <Fade delay={80}>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-[#0C0D0F] leading-tight mt-4 mb-6">
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-[#1A1510] leading-tight mt-4 mb-6">
                 Tres patrones que
                 <br />
                 destruyen valor
@@ -572,7 +572,7 @@ export default function Home() {
               </h2>
             </Fade>
             <Fade delay={160}>
-              <p className="text-lg text-gray-500 leading-relaxed">
+              <p className="text-lg text-[#6B5745] leading-relaxed">
                 No son fallas de talento. Son fallas de sistema. Y se repiten en prácticamente
                 todas las organizaciones que crecieron rápido sin rediseñar cómo deciden.
               </p>
@@ -604,14 +604,14 @@ export default function Home() {
               },
             ].map(({ num, title, body, signal }, i) => (
               <Fade key={i} delay={i * 100}>
-                <div className="bg-white border border-gray-100 rounded-3xl p-8 h-full flex flex-col lift">
-                  <span className="text-[11px] font-black text-gray-300 tracking-widest">{num}</span>
-                  <h3 className="text-xl font-black text-[#0C0D0F] mt-3 mb-4 leading-snug">
+                <div className="bg-white border border-[#EDE6DB] rounded-3xl p-8 h-full flex flex-col lift">
+                  <span className="text-[11px] font-black text-[#A89585] tracking-widest">{num}</span>
+                  <h3 className="text-xl font-black text-[#1A1510] mt-3 mb-4 leading-snug">
                     {title}
                   </h3>
-                  <p className="text-gray-500 text-sm leading-relaxed flex-1">{body}</p>
-                  <div className="border-t border-gray-100 pt-4 mt-6">
-                    <p className="text-xs text-gray-400 italic">{signal}</p>
+                  <p className="text-[#6B5745] text-sm leading-relaxed flex-1">{body}</p>
+                  <div className="border-t border-[#EDE6DB] pt-4 mt-6">
+                    <p className="text-xs text-[#8B7A68] italic">{signal}</p>
                   </div>
                 </div>
               </Fade>
@@ -627,12 +627,12 @@ export default function Home() {
             {/* Left */}
             <div className="lg:sticky lg:top-28">
               <Fade>
-                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.18em]">
+                <span className="text-[11px] font-bold text-[#8B7A68] uppercase tracking-[0.18em]">
                   Cómo trabajamos
                 </span>
               </Fade>
               <Fade delay={80}>
-                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-[#0C0D0F] leading-tight mt-4 mb-6">
+                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-[#1A1510] leading-tight mt-4 mb-6">
                   Tres fases.
                   <br />
                   Un sistema
@@ -641,14 +641,14 @@ export default function Home() {
                 </h2>
               </Fade>
               <Fade delay={160}>
-                <p className="text-lg text-gray-500 leading-relaxed mb-6">
+                <p className="text-lg text-[#6B5745] leading-relaxed mb-6">
                   No llegamos con un framework genérico. Llegamos a entender cómo fluye la
                   autoridad real en tu organización — no el organigrama, sino quién realmente
                   decide y cómo.
                 </p>
               </Fade>
               <Fade delay={240}>
-                <p className="text-sm text-gray-400 leading-relaxed">
+                <p className="text-sm text-[#8B7A68] leading-relaxed">
                   El proceso completo toma entre 9 y 13 semanas. Al final, tu organización tiene
                   un sistema operativo de decisiones — no un PowerPoint sobre liderazgo.
                 </p>
@@ -684,21 +684,21 @@ export default function Home() {
                   <div
                     className={`relative pl-9 pb-10 ${
                       i < arr.length - 1
-                        ? 'before:absolute before:left-[10px] before:top-5 before:bottom-0 before:w-px before:bg-gray-100'
+                        ? 'before:absolute before:left-[10px] before:top-5 before:bottom-0 before:w-px before:bg-[#EDE6DB]'
                         : ''
                     }`}
                   >
-                    <div className="absolute left-0 top-1 w-5 h-5 rounded-full bg-[#0C0D0F] border-[3px] border-white ring-1 ring-gray-200" />
+                    <div className="absolute left-0 top-1 w-5 h-5 rounded-full bg-[#B8935A] border-[3px] border-white ring-1 ring-[#E8DDD0]" />
                     <div className="flex flex-wrap items-center gap-2 mb-1">
-                      <span className="text-[11px] font-black text-gray-300 uppercase tracking-widest">
+                      <span className="text-[11px] font-black text-[#A89585] uppercase tracking-widest">
                         {phase}
                       </span>
-                      <span className="text-gray-200 text-xs">·</span>
-                      <span className="text-xs text-gray-400">{weeks}</span>
+                      <span className="text-[#C4B5A5] text-xs">·</span>
+                      <span className="text-xs text-[#8B7A68]">{weeks}</span>
                     </div>
-                    <h3 className="text-lg font-black text-[#0C0D0F] mb-2">{title}</h3>
-                    <p className="text-gray-500 text-sm leading-relaxed mb-3">{body}</p>
-                    <div className="inline-flex items-center gap-1.5 bg-gray-50 border border-gray-100 rounded-full px-3 py-1">
+                    <h3 className="text-lg font-black text-[#1A1510] mb-2">{title}</h3>
+                    <p className="text-[#6B5745] text-sm leading-relaxed mb-3">{body}</p>
+                    <div className="inline-flex items-center gap-1.5 bg-[#F2EBE0] border border-[#EDE6DB] rounded-full px-3 py-1">
                       <svg
                         width="12"
                         height="12"
@@ -710,7 +710,7 @@ export default function Home() {
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
-                      <span className="text-xs text-gray-500 font-medium">{deliverable}</span>
+                      <span className="text-xs text-[#6B5745] font-medium">{deliverable}</span>
                     </div>
                   </div>
                 </Fade>
@@ -721,11 +721,11 @@ export default function Home() {
       </section>
 
       {/* ── ENTREGABLES ────────────────────────────────────────────────────── */}
-      <section className="bg-[#0C0D0F] py-28 lg:py-40">
+      <section className="bg-[#1A1510] py-28 lg:py-40">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="text-center mb-16">
             <Fade>
-              <span className="text-[11px] font-bold text-gray-600 uppercase tracking-[0.18em]">
+              <span className="text-[11px] font-bold text-[#4A3728] uppercase tracking-[0.18em]">
                 Lo que recibes
               </span>
             </Fade>
@@ -790,16 +790,16 @@ export default function Home() {
       </section>
 
       {/* ── PARA QUIÉN ─────────────────────────────────────────────────────── */}
-      <section id="para-quien" className="bg-gray-50 py-28 lg:py-40">
+      <section id="para-quien" className="bg-[#F2EBE0] py-28 lg:py-40">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
           <div className="max-w-3xl mb-14">
             <Fade>
-              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.18em]">
+              <span className="text-[11px] font-bold text-[#8B7A68] uppercase tracking-[0.18em]">
                 Para quién es esto
               </span>
             </Fade>
             <Fade delay={80}>
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-[#0C0D0F] mt-4 mb-6 leading-tight">
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-[#1A1510] mt-4 mb-6 leading-tight">
                 Organizaciones que
                 <br />
                 crecieron más rápido
@@ -819,7 +819,7 @@ export default function Home() {
               'Empresas en mercados de alta velocidad donde la lentitud decisional ya está costando participación de mercado.',
             ].map((text, i) => (
               <Fade key={i} delay={i * 80}>
-                <div className="bg-white border border-gray-100 rounded-2xl p-6 flex gap-4 lift">
+                <div className="bg-white border border-[#EDE6DB] rounded-2xl p-6 flex gap-4 lift">
                   <span className="text-emerald-500 mt-0.5 flex-shrink-0">
                     <svg
                       width="18"
@@ -832,7 +832,7 @@ export default function Home() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   </span>
-                  <p className="text-gray-600 leading-relaxed text-sm">{text}</p>
+                  <p className="text-[#4A3728] leading-relaxed text-sm">{text}</p>
                 </div>
               </Fade>
             ))}
@@ -868,7 +868,7 @@ export default function Home() {
       </section>
 
       {/* ── CTA FINAL ──────────────────────────────────────────────────────── */}
-      <section id="contacto" className="bg-[#0C0D0F] py-28 lg:py-40">
+      <section id="contacto" className="bg-[#1A1510] py-28 lg:py-40">
         <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center">
           <Fade>
             <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-white leading-[1.05] mb-6">
@@ -888,7 +888,7 @@ export default function Home() {
               href="https://calendly.com/karosadoga/30min"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 bg-white text-[#0C0D0F] font-bold px-10 py-5 rounded-full hover:bg-gray-100 transition-colors text-base"
+              className="inline-flex items-center justify-center gap-2 bg-white text-[#1A1510] font-bold px-10 py-5 rounded-full hover:bg-[#EDE6DB] transition-colors text-base"
             >
               Agendar sesión de diagnóstico
               <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -916,7 +916,7 @@ export default function Home() {
       </section>
 
       {/* ── FOOTER ─────────────────────────────────────────────────────────── */}
-      <footer className="bg-[#080809] border-t border-white/5 py-10">
+      <footer className="bg-[#120F0A] border-t border-white/5 py-10">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-4">
           <span className="text-white/20 font-black text-sm">Estructura Estratégica</span>
           <p className="text-white/15 text-xs text-center">
