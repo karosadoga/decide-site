@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es">
       <body className={`${inter.variable} font-sans antialiased bg-white text-gray-900`}>
-        {children}
+        <div style={{ backgroundColor: '#FAF6EF', color: '#1A1510' }}>{children}</div>
       </body>
     </html>
   )
