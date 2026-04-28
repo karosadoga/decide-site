@@ -202,7 +202,7 @@ export default function Home() {
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 lg:px-12 h-16 flex items-center justify-between">
-          <span className="text-white font-black text-lg tracking-tight">DECIDE</span>
+          <span className="text-white font-black text-lg tracking-tight">Estructura Estratégica</span>
 
           <div className="hidden md:flex items-center gap-8 text-sm text-white/50 font-medium">
             {[
@@ -881,7 +881,7 @@ export default function Home() {
           </Fade>
           <Fade delay={200}>
             <a
-              href="mailto:hola@decide.mx"
+              href="mailto:hola@estructuraestrategica.com"
               className="inline-flex items-center justify-center gap-2 bg-white text-[#0C0D0F] font-bold px-10 py-5 rounded-full hover:bg-gray-100 transition-colors text-base"
             >
               Solicitar diagnóstico gratuito
@@ -906,15 +906,15 @@ export default function Home() {
       {/* ── FOOTER ─────────────────────────────────────────────────────────── */}
       <footer className="bg-[#080809] border-t border-white/5 py-10">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="text-white/20 font-black text-sm">DECIDE</span>
+          <span className="text-white/20 font-black text-sm">Estructura Estratégica</span>
           <p className="text-white/15 text-xs text-center">
-            © {new Date().getFullYear()} Decide · Arquitectura de decisiones organizacionales
+            © {new Date().getFullYear()} Estructura Estratégica · Arquitectura de decisiones organizacionales
           </p>
           <a
-            href="mailto:hola@decide.mx"
+            href="mailto:hola@estructuraestrategica.com"
             className="text-white/20 text-xs hover:text-white/40 transition-colors"
           >
-            hola@decide.mx
+            hola@estructuraestrategica.com
           </a>
         </div>
       </footer>
